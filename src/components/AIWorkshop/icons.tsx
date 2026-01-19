@@ -422,3 +422,43 @@ export const MailIcon: React.FC<IconProps> = ({ className = '', size = 24 }) => 
     <path d="M22 6l-10 7-10-7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
   </svg>
 );
+
+// Additional minimal icons for landing page
+export const NetworkIcon: React.FC<IconProps> = ({ className = '', size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="12" cy="5" r="2" stroke="currentColor" strokeWidth="1.5"/>
+    <circle cx="5" cy="19" r="2" stroke="currentColor" strokeWidth="1.5"/>
+    <circle cx="19" cy="19" r="2" stroke="currentColor" strokeWidth="1.5"/>
+    <path d="M12 7v4M12 11L5 17M12 11l7 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
+
+export const LockIcon: React.FC<IconProps> = ({ className = '', size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <rect x="5" y="11" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.5"/>
+    <path d="M8 11V7a4 4 0 118 0v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    <circle cx="12" cy="16" r="1" fill="currentColor"/>
+  </svg>
+);
+
+export const GridIcon: React.FC<IconProps> = ({ className = '', size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+    <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+    <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+    <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth="1.5"/>
+  </svg>
+);
+
+export const QuoteIcon: React.FC<IconProps> = ({ className = '', size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2H4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2h4c0 5-2.5 6-4 6H3z" fill="currentColor" opacity="0.3"/>
+    <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2h-4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2h4c0 5-2.5 6-4 6h-1z" fill="currentColor" opacity="0.3"/>
+  </svg>
+);
+
+export const DiamondIcon: React.FC<IconProps> = ({ className = '', size = 24 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M12 2L2 12l10 10 10-10L12 2z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
