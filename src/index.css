@@ -22,6 +22,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode body styles */
+html.dark body {
+  background: #0a0a0a;
+  color: #fafafa;
 }
 
 #root {
@@ -45,6 +52,15 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a3a3a3;
+}
+
+/* Dark mode scrollbar */
+html.dark ::-webkit-scrollbar-thumb {
+  background: #404040;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #525252;
 }
 
 /* Clean Focus */

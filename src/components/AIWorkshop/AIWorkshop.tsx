@@ -14,7 +14,8 @@ import { PeerNetwork } from './PeerNetwork';
 import { AIUsageTracker } from './AIUsageTracker';
 import { EventsCalendar } from './EventsCalendar';
 import { Newsletter } from './Newsletter';
-import { SynapseLogoIcon, PlusIcon, LeafIcon, FlaskIcon, BookIcon, ShieldIcon, UserIcon, SparkleIcon, TrendingUpIcon, CompassIcon, CalendarIcon, MailIcon } from './icons';
+import { Settings } from './Settings';
+import { SynapseLogoIcon, PlusIcon, LeafIcon, FlaskIcon, BookIcon, ShieldIcon, UserIcon, SparkleIcon, TrendingUpIcon, CompassIcon, CalendarIcon, MailIcon, SettingsIcon } from './icons';
 import { enhancedStories, enhancedExperiments } from './sampleData';
 
 // User profile type
@@ -273,12 +274,31 @@ export const AIWorkshop: React.FC = () => {
   const [isSwipingCategory, setIsSwipingCategory] = useState(false);
   const [, setSlideDirection] = useState<'left' | 'right' | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('synapse-dark-mode');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [showSettings, setShowSettings] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
   const startX = useRef(0);
   const isPulling = useRef(false);
   const isHorizontalSwipe = useRef(false);
+
+  // Dark mode effect - save preference and update document
+  useEffect(() => {
+    localStorage.setItem('synapse-dark-mode', JSON.stringify(darkMode));
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
 
   // Pull-to-refresh logic
   const handleTouchStart = useCallback((e: TouchEvent) => {
@@ -661,7 +681,9 @@ const handleNewPost = (post: { title: string; content: string; limitation: strin
   const currentCategoryTabs = navCategories[activeCategoryIndex]?.tabs || [];
 
   return (
-    <div ref={mainRef} className="min-h-screen min-h-[100dvh] bg-neutral-50 relative overscroll-none touch-pan-y">
+    <div ref={mainRef} className={`min-h-screen min-h-[100dvh] relative overscroll-none touch-pan-y transition-colors ${
+      darkMode ? 'bg-neutral-950' : 'bg-neutral-50'
+    }`}>
       {/* Pull-to-refresh indicator */}
       <div 
         className="fixed left-0 right-0 flex justify-center transition-all duration-200 ease-out z-[100] pointer-events-none"
@@ -671,13 +693,27 @@ const handleNewPost = (post: { title: string; content: string; limitation: strin
           transform: `scale(${Math.min(pullDistance / 80, 1)})`
         }}
       >
-        <div className={`w-12 h-12 bg-neutral-900 rounded-xl flex items-center justify-center shadow-xl ${isRefreshing ? 'animate-spin' : ''}`}>
-          <SynapseLogoIcon className="text-white" size={26} />
+        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-xl ${
+          darkMode ? 'bg-white' : 'bg-neutral-900'
+        } ${isRefreshing ? 'animate-spin' : ''}`}>
+          <SynapseLogoIcon className={darkMode ? 'text-neutral-900' : 'text-white'} size={26} />
         </div>
       </div>
 
+      {/* Settings Modal */}
+      <Settings
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        darkMode={darkMode}
+        onToggleDarkMode={toggleDarkMode}
+        userName={userProfile.name}
+        userRole={userProfile.role}
+      />
+
       {/* Header - Mobile Optimized */}
-      <header className="sticky top-0 z-50 bg-white border-b border-neutral-200 safe-top">
+      <header className={`sticky top-0 z-50 border-b safe-top transition-colors ${
+        darkMode ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-neutral-200'
+      }`}>
         <div className="max-w-3xl mx-auto px-3 py-2">
           {/* Category Selector with Swipe Indicator */}
           <div className="flex items-center justify-between mb-2">
@@ -694,8 +730,8 @@ const handleNewPost = (post: { title: string; content: string; limitation: strin
                     }}
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all active:scale-95 ${
                       isActive
-                        ? 'bg-neutral-900 text-white'
-                        : 'bg-neutral-100 text-neutral-500'
+                        ? darkMode ? 'bg-white text-neutral-900' : 'bg-neutral-900 text-white'
+                        : darkMode ? 'bg-neutral-800 text-neutral-400' : 'bg-neutral-100 text-neutral-500'
                     }`}
                   >
                     <CategoryIcon size={14} />
@@ -704,18 +740,28 @@ const handleNewPost = (post: { title: string; content: string; limitation: strin
                 );
               })}
             </div>
-            {/* Swipe hint dots */}
-            <div className="flex gap-1.5 items-center">
-              {navCategories.map((_, index) => (
-                <div 
-                  key={index}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    activeCategoryIndex === index 
-                      ? 'bg-neutral-900 w-4' 
-                      : 'bg-neutral-300'
-                  }`}
-                />
-              ))}
+            {/* Settings Button & Swipe Dots */}
+            <div className="flex gap-3 items-center">
+              <div className="flex gap-1.5 items-center">
+                {navCategories.map((_, index) => (
+                  <div 
+                    key={index}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      activeCategoryIndex === index 
+                        ? darkMode ? 'bg-white w-4' : 'bg-neutral-900 w-4'
+                        : darkMode ? 'bg-neutral-600' : 'bg-neutral-300'
+                    }`}
+                  />
+                ))}
+              </div>
+              <button
+                onClick={() => setShowSettings(true)}
+                className={`p-2 rounded-lg transition-colors ${
+                  darkMode ? 'hover:bg-neutral-800 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-500'
+                }`}
+              >
+                <SettingsIcon size={20} />
+              </button>
             </div>
           </div>
 
@@ -731,8 +777,8 @@ const handleNewPost = (post: { title: string; content: string; limitation: strin
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95 whitespace-nowrap ${
                       isActive
-                        ? 'bg-neutral-100 text-neutral-900 shadow-sm'
-                        : 'text-neutral-500 active:bg-neutral-50'
+                        ? darkMode ? 'bg-neutral-800 text-white shadow-sm' : 'bg-neutral-100 text-neutral-900 shadow-sm'
+                        : darkMode ? 'text-neutral-400 active:bg-neutral-800' : 'text-neutral-500 active:bg-neutral-50'
                     }`}
                   >
                     <TabIcon size={16} />
@@ -915,11 +961,17 @@ const handleNewPost = (post: { title: string; content: string; limitation: strin
 
       {/* Fixed New Post Button at Bottom */}
       {activeTab === 'feed' && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 safe-bottom pb-4 pt-2 bg-gradient-to-t from-neutral-50 via-neutral-50 to-transparent">
+        <div className={`fixed bottom-0 left-0 right-0 z-40 safe-bottom pb-4 pt-2 bg-gradient-to-t ${
+          darkMode ? 'from-neutral-950 via-neutral-950' : 'from-neutral-50 via-neutral-50'
+        } to-transparent`}>
           <div className="flex justify-center">
             <button 
               onClick={() => setShowComposer(!showComposer)}
-              className="flex items-center gap-2 px-6 py-3.5 bg-neutral-900 text-white text-sm font-medium rounded-full transition-all shadow-xl active:scale-95 active:bg-neutral-800"
+              className={`flex items-center gap-2 px-6 py-3.5 text-sm font-medium rounded-full transition-all shadow-xl active:scale-95 ${
+                darkMode 
+                  ? 'bg-white text-neutral-900 active:bg-neutral-100' 
+                  : 'bg-neutral-900 text-white active:bg-neutral-800'
+              }`}
             >
               <PlusIcon size={18} />
               <span>New Post</span>
