@@ -271,6 +271,8 @@ export const AIWorkshop: React.FC = () => {
   const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
   const [swipeOffset, setSwipeOffset] = useState(0);
   const [isSwipingCategory, setIsSwipingCategory] = useState(false);
+  const [, setSlideDirection] = useState<'left' | 'right' | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
@@ -344,30 +346,63 @@ export const AIWorkshop: React.FC = () => {
     if (!isSwipingCategory) return;
     
     const threshold = 50;
+    const screenWidth = window.innerWidth;
+    
     if (swipeOffset > threshold && activeCategoryIndex > 0) {
       // Swipe right - go to previous category
-      const newIndex = activeCategoryIndex - 1;
-      setActiveCategoryIndex(newIndex);
-      // Set active tab to first tab of new category
-      const navCats = [
-        { tabs: ['feed', 'network', 'events', 'newsletter'] },
-        { tabs: ['experiments', 'playbooks', 'my-journey'] },
-        { tabs: ['ai-advisor', 'analytics', 'trust'] }
-      ];
-      setActiveTab(navCats[newIndex].tabs[0] as TabType);
+      setSlideDirection('right');
+      setIsTransitioning(true);
+      setSwipeOffset(screenWidth); // Slide out to the right
+      
+      setTimeout(() => {
+        const newIndex = activeCategoryIndex - 1;
+        setActiveCategoryIndex(newIndex);
+        const navCats = [
+          { tabs: ['feed', 'network', 'events', 'newsletter'] },
+          { tabs: ['experiments', 'playbooks', 'my-journey'] },
+          { tabs: ['ai-advisor', 'analytics', 'trust'] }
+        ];
+        setActiveTab(navCats[newIndex].tabs[0] as TabType);
+        setSwipeOffset(-screenWidth); // Position new content off-screen left
+        
+        requestAnimationFrame(() => {
+          setSwipeOffset(0); // Slide in from left
+          setTimeout(() => {
+            setIsTransitioning(false);
+            setSlideDirection(null);
+          }, 300);
+        });
+      }, 150);
     } else if (swipeOffset < -threshold && activeCategoryIndex < 2) {
       // Swipe left - go to next category
-      const newIndex = activeCategoryIndex + 1;
-      setActiveCategoryIndex(newIndex);
-      const navCats = [
-        { tabs: ['feed', 'network', 'events', 'newsletter'] },
-        { tabs: ['experiments', 'playbooks', 'my-journey'] },
-        { tabs: ['ai-advisor', 'analytics', 'trust'] }
-      ];
-      setActiveTab(navCats[newIndex].tabs[0] as TabType);
+      setSlideDirection('left');
+      setIsTransitioning(true);
+      setSwipeOffset(-screenWidth); // Slide out to the left
+      
+      setTimeout(() => {
+        const newIndex = activeCategoryIndex + 1;
+        setActiveCategoryIndex(newIndex);
+        const navCats = [
+          { tabs: ['feed', 'network', 'events', 'newsletter'] },
+          { tabs: ['experiments', 'playbooks', 'my-journey'] },
+          { tabs: ['ai-advisor', 'analytics', 'trust'] }
+        ];
+        setActiveTab(navCats[newIndex].tabs[0] as TabType);
+        setSwipeOffset(screenWidth); // Position new content off-screen right
+        
+        requestAnimationFrame(() => {
+          setSwipeOffset(0); // Slide in from right
+          setTimeout(() => {
+            setIsTransitioning(false);
+            setSlideDirection(null);
+          }, 300);
+        });
+      }, 150);
+    } else {
+      // Snap back
+      setSwipeOffset(0);
     }
     
-    setSwipeOffset(0);
     setIsSwipingCategory(false);
     isHorizontalSwipe.current = false;
   }, [swipeOffset, activeCategoryIndex, isSwipingCategory]);
@@ -703,8 +738,9 @@ export const AIWorkshop: React.FC = () => {
         className="max-w-3xl mx-auto px-3 sm:px-6 py-4 pb-36 sm:pb-28"
         style={{
           transform: `translateX(${swipeOffset}px)`,
-          transition: isSwipingCategory ? 'none' : 'transform 0.3s ease-out',
-          opacity: isSwipingCategory ? 0.9 : 1
+          transition: isSwipingCategory ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+          opacity: isTransitioning ? 0.85 : (isSwipingCategory ? 0.95 : 1),
+          willChange: 'transform, opacity'
         }}
       >
         
@@ -874,8 +910,27 @@ export const AIWorkshop: React.FC = () => {
               <button
                 key={category.id}
                 onClick={() => {
-                  setActiveCategoryIndex(index);
-                  setActiveTab(category.tabs[0].id);
+                  if (index === activeCategoryIndex || isTransitioning) return;
+                  
+                  const screenWidth = window.innerWidth;
+                  const direction = index > activeCategoryIndex ? 'left' : 'right';
+                  setSlideDirection(direction);
+                  setIsTransitioning(true);
+                  setSwipeOffset(direction === 'left' ? -screenWidth : screenWidth);
+                  
+                  setTimeout(() => {
+                    setActiveCategoryIndex(index);
+                    setActiveTab(category.tabs[0].id);
+                    setSwipeOffset(direction === 'left' ? screenWidth : -screenWidth);
+                    
+                    requestAnimationFrame(() => {
+                      setSwipeOffset(0);
+                      setTimeout(() => {
+                        setIsTransitioning(false);
+                        setSlideDirection(null);
+                      }, 300);
+                    });
+                  }, 150);
                 }}
                 className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all active:scale-95 min-w-[72px] ${
                   isActive
