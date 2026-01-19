@@ -71,7 +71,7 @@
 }
 
 /* Dynamic viewport height for mobile */
-.min-h-\\[100dvh\\] {
+.min-h-dvh {
   min-height: 100dvh;
 }
 

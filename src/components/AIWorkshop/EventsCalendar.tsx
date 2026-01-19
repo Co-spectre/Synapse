@@ -5,7 +5,9 @@ import {
   LocationIcon,
   SparkleIcon,
   PlayIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  PlusIcon,
+  CheckIcon
 } from './icons';
 import { JobRole } from './Onboarding';
 
@@ -292,13 +294,197 @@ const getRoleLabel = (role: JobRole): string => {
   return labels[role];
 };
 
+// Helper function to generate Google Calendar URL
+const generateGoogleCalendarUrl = (event: CompanyEvent): string => {
+  const startDate = new Date(event.date);
+  const [hours, minutes] = event.time.replace(/[APap][Mm]/g, '').trim().split(':');
+  const isPM = event.time.toLowerCase().includes('pm');
+  let hour = parseInt(hours);
+  if (isPM && hour !== 12) hour += 12;
+  if (!isPM && hour === 12) hour = 0;
+  startDate.setHours(hour, parseInt(minutes) || 0);
+  
+  const endDate = new Date(event.date);
+  const [endHours, endMinutes] = event.endTime.replace(/[APap][Mm]/g, '').trim().split(':');
+  const isEndPM = event.endTime.toLowerCase().includes('pm');
+  let endHour = parseInt(endHours);
+  if (isEndPM && endHour !== 12) endHour += 12;
+  if (!isEndPM && endHour === 12) endHour = 0;
+  endDate.setHours(endHour, parseInt(endMinutes) || 0);
+
+  const formatDateForGoogle = (date: Date): string => {
+    return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  };
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: event.title,
+    dates: `${formatDateForGoogle(startDate)}/${formatDateForGoogle(endDate)}`,
+    details: `${event.description}${event.speaker ? `\n\nSpeaker: ${event.speaker.name} - ${event.speaker.title} at ${event.speaker.organization}` : ''}${event.food ? `\n\nRefreshments: ${event.food}` : ''}`,
+    location: event.room ? `${event.location} - ${event.room}` : event.location,
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+};
+
+// Helper function to generate Outlook Calendar URL
+const generateOutlookCalendarUrl = (event: CompanyEvent): string => {
+  const startDate = new Date(event.date);
+  const [hours, minutes] = event.time.replace(/[APap][Mm]/g, '').trim().split(':');
+  const isPM = event.time.toLowerCase().includes('pm');
+  let hour = parseInt(hours);
+  if (isPM && hour !== 12) hour += 12;
+  if (!isPM && hour === 12) hour = 0;
+  startDate.setHours(hour, parseInt(minutes) || 0);
+  
+  const endDate = new Date(event.date);
+  const [endHours, endMinutes] = event.endTime.replace(/[APap][Mm]/g, '').trim().split(':');
+  const isEndPM = event.endTime.toLowerCase().includes('pm');
+  let endHour = parseInt(endHours);
+  if (isEndPM && endHour !== 12) endHour += 12;
+  if (!isEndPM && endHour === 12) endHour = 0;
+  endDate.setHours(endHour, parseInt(endMinutes) || 0);
+
+  const params = new URLSearchParams({
+    rru: 'addevent',
+    subject: event.title,
+    startdt: startDate.toISOString(),
+    enddt: endDate.toISOString(),
+    body: `${event.description}${event.speaker ? `\n\nSpeaker: ${event.speaker.name}` : ''}`,
+    location: event.room ? `${event.location} - ${event.room}` : event.location,
+  });
+
+  return `https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`;
+};
+
+// Helper to generate ICS file content
+const generateICSContent = (event: CompanyEvent): string => {
+  const startDate = new Date(event.date);
+  const [hours, minutes] = event.time.replace(/[APap][Mm]/g, '').trim().split(':');
+  const isPM = event.time.toLowerCase().includes('pm');
+  let hour = parseInt(hours);
+  if (isPM && hour !== 12) hour += 12;
+  if (!isPM && hour === 12) hour = 0;
+  startDate.setHours(hour, parseInt(minutes) || 0);
+  
+  const endDate = new Date(event.date);
+  const [endHours, endMinutes] = event.endTime.replace(/[APap][Mm]/g, '').trim().split(':');
+  const isEndPM = event.endTime.toLowerCase().includes('pm');
+  let endHour = parseInt(endHours);
+  if (isEndPM && endHour !== 12) endHour += 12;
+  if (!isEndPM && endHour === 12) endHour = 0;
+  endDate.setHours(endHour, parseInt(endMinutes) || 0);
+
+  const formatDateForICS = (date: Date): string => {
+    return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '').replace('Z', '');
+  };
+
+  return `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Synapse//Events//EN
+BEGIN:VEVENT
+UID:${event.id}@synapse.app
+DTSTAMP:${formatDateForICS(new Date())}Z
+DTSTART:${formatDateForICS(startDate)}Z
+DTEND:${formatDateForICS(endDate)}Z
+SUMMARY:${event.title}
+DESCRIPTION:${event.description.replace(/\n/g, '\\n')}
+LOCATION:${event.room ? `${event.location} - ${event.room}` : event.location}
+END:VEVENT
+END:VCALENDAR`;
+};
+
+// Download ICS file
+const downloadICS = (event: CompanyEvent) => {
+  const icsContent = generateICSContent(event);
+  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${event.title.replace(/[^a-z0-9]/gi, '_')}.ics`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
 export const EventsCalendar: React.FC<EventsCalendarProps> = ({ userRole, userName: _userName }) => {
   const [selectedEvent, setSelectedEvent] = useState<CompanyEvent | null>(null);
   const [showTranscript, setShowTranscript] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past' | 'relevant'>('upcoming');
+  const [showCreateEvent, setShowCreateEvent] = useState(false);
+  const [showCalendarOptions, setShowCalendarOptions] = useState<string | null>(null);
+  const [events, setEvents] = useState<CompanyEvent[]>(mockEvents);
+  const [addedToCalendar, setAddedToCalendar] = useState<string[]>([]);
+  
+  // Create Event Form State
+  const [newEvent, setNewEvent] = useState({
+    title: '',
+    description: '',
+    date: '',
+    time: '',
+    endTime: '',
+    location: '',
+    room: '',
+    eventType: 'talk' as CompanyEvent['eventType'],
+    targetAudience: [userRole] as JobRole[],
+    food: '',
+    registrationRequired: false,
+    maxAttendees: ''
+  });
+
+  // Handle creating new event
+  const handleCreateEvent = () => {
+    if (!newEvent.title || !newEvent.date || !newEvent.time) return;
+    
+    const createdEvent: CompanyEvent = {
+      id: `evt-custom-${Date.now()}`,
+      title: newEvent.title,
+      description: newEvent.description || 'No description provided',
+      date: new Date(newEvent.date),
+      time: newEvent.time,
+      endTime: newEvent.endTime || newEvent.time,
+      location: newEvent.location || 'TBD',
+      room: newEvent.room || undefined,
+      eventType: newEvent.eventType,
+      targetAudience: newEvent.targetAudience,
+      food: newEvent.food || undefined,
+      isPast: new Date(newEvent.date) < new Date(),
+      registrationRequired: newEvent.registrationRequired,
+      maxAttendees: newEvent.maxAttendees ? parseInt(newEvent.maxAttendees) : undefined,
+      currentAttendees: 0
+    };
+    
+    setEvents(prev => [...prev, createdEvent]);
+    setShowCreateEvent(false);
+    setNewEvent({
+      title: '',
+      description: '',
+      date: '',
+      time: '',
+      endTime: '',
+      location: '',
+      room: '',
+      eventType: 'talk',
+      targetAudience: [userRole],
+      food: '',
+      registrationRequired: false,
+      maxAttendees: ''
+    });
+  };
+
+  // Toggle audience role
+  const toggleAudienceRole = (role: JobRole) => {
+    setNewEvent(prev => ({
+      ...prev,
+      targetAudience: prev.targetAudience.includes(role)
+        ? prev.targetAudience.filter(r => r !== role)
+        : [...prev.targetAudience, role]
+    }));
+  };
 
   // Filter events
-  const filteredEvents = mockEvents.filter(event => {
+  const filteredEvents = events.filter(event => {
     if (filter === 'upcoming') return !event.isPast;
     if (filter === 'past') return event.isPast;
     if (filter === 'relevant') return event.targetAudience.includes(userRole);
@@ -310,21 +496,29 @@ export const EventsCalendar: React.FC<EventsCalendarProps> = ({ userRole, userNa
     return a.isPast ? 1 : -1;
   });
 
-  const upcomingCount = mockEvents.filter(e => !e.isPast).length;
-  const relevantCount = mockEvents.filter(e => e.targetAudience.includes(userRole) && !e.isPast).length;
+  const upcomingCount = events.filter(e => !e.isPast).length;
+  const relevantCount = events.filter(e => e.targetAudience.includes(userRole) && !e.isPast).length;
 
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl p-5 text-white">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
-            <CalendarIcon size={20} className="text-white" />
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center">
+              <CalendarIcon size={20} className="text-white" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-lg">Events Calendar</h2>
+              <p className="text-indigo-200 text-xs">Company AI & Innovation Events</p>
+            </div>
           </div>
-          <div>
-            <h2 className="font-semibold text-lg">Events Calendar</h2>
-            <p className="text-indigo-200 text-xs">Company AI & Innovation Events</p>
-          </div>
+          <button
+            onClick={() => setShowCreateEvent(true)}
+            className="w-10 h-10 bg-white/20 backdrop-blur rounded-xl flex items-center justify-center active:scale-95 transition-transform"
+          >
+            <PlusIcon size={20} className="text-white" />
+          </button>
         </div>
         
         <div className="flex items-center gap-3 text-sm">
@@ -338,6 +532,194 @@ export const EventsCalendar: React.FC<EventsCalendarProps> = ({ userRole, userNa
           </div>
         </div>
       </div>
+
+      {/* Create Event Modal */}
+      {showCreateEvent && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
+          <div className="bg-white w-full max-w-lg rounded-t-2xl max-h-[90vh] overflow-y-auto animate-slideUp">
+            <div className="sticky top-0 bg-white border-b border-neutral-100 p-4 flex items-center justify-between">
+              <h3 className="font-semibold text-lg">Create Event</h3>
+              <button
+                onClick={() => setShowCreateEvent(false)}
+                className="w-8 h-8 bg-neutral-100 rounded-lg flex items-center justify-center"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-4">
+              {/* Event Title */}
+              <div>
+                <label className="text-xs font-medium text-neutral-600 mb-1.5 block">Event Title *</label>
+                <input
+                  type="text"
+                  value={newEvent.title}
+                  onChange={(e) => setNewEvent(prev => ({ ...prev, title: e.target.value }))}
+                  placeholder="e.g., AI Workshop: Getting Started"
+                  className="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="text-xs font-medium text-neutral-600 mb-1.5 block">Description</label>
+                <textarea
+                  value={newEvent.description}
+                  onChange={(e) => setNewEvent(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="What's this event about?"
+                  rows={3}
+                  className="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 resize-none"
+                />
+              </div>
+
+              {/* Date & Time */}
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-neutral-600 mb-1.5 block">Date *</label>
+                  <input
+                    type="date"
+                    value={newEvent.date}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, date: e.target.value }))}
+                    className="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-neutral-600 mb-1.5 block">Start Time *</label>
+                  <input
+                    type="time"
+                    value={newEvent.time}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, time: e.target.value }))}
+                    className="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-neutral-600 mb-1.5 block">End Time</label>
+                  <input
+                    type="time"
+                    value={newEvent.endTime}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, endTime: e.target.value }))}
+                    className="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Location */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-medium text-neutral-600 mb-1.5 block">Location</label>
+                  <input
+                    type="text"
+                    value={newEvent.location}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, location: e.target.value }))}
+                    placeholder="e.g., Main Campus"
+                    className="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-neutral-600 mb-1.5 block">Room</label>
+                  <input
+                    type="text"
+                    value={newEvent.room}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, room: e.target.value }))}
+                    placeholder="e.g., Conference Room A"
+                    className="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              {/* Event Type */}
+              <div>
+                <label className="text-xs font-medium text-neutral-600 mb-1.5 block">Event Type</label>
+                <div className="flex flex-wrap gap-2">
+                  {(['talk', 'workshop', 'social', 'training', 'conference'] as const).map(type => (
+                    <button
+                      key={type}
+                      onClick={() => setNewEvent(prev => ({ ...prev, eventType: type }))}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        newEvent.eventType === type
+                          ? getEventTypeColor(type)
+                          : 'bg-neutral-100 text-neutral-500'
+                      }`}
+                    >
+                      {getEventTypeLabel(type)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Target Audience */}
+              <div>
+                <label className="text-xs font-medium text-neutral-600 mb-1.5 block">Target Audience</label>
+                <div className="flex flex-wrap gap-2">
+                  {(['engineering', 'design', 'sales', 'marketing', 'finance', 'logistics', 'innovation', 'intern'] as JobRole[]).map(role => (
+                    <button
+                      key={role}
+                      onClick={() => toggleAudienceRole(role)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        newEvent.targetAudience.includes(role)
+                          ? 'bg-indigo-100 text-indigo-700'
+                          : 'bg-neutral-100 text-neutral-500'
+                      }`}
+                    >
+                      {getRoleLabel(role)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Food/Refreshments */}
+              <div>
+                <label className="text-xs font-medium text-neutral-600 mb-1.5 block">Food & Refreshments</label>
+                <input
+                  type="text"
+                  value={newEvent.food}
+                  onChange={(e) => setNewEvent(prev => ({ ...prev, food: e.target.value }))}
+                  placeholder="e.g., Coffee & snacks provided"
+                  className="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              {/* Registration */}
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-neutral-700">Require Registration?</span>
+                <button
+                  onClick={() => setNewEvent(prev => ({ ...prev, registrationRequired: !prev.registrationRequired }))}
+                  className={`w-12 h-6 rounded-full transition-all ${
+                    newEvent.registrationRequired ? 'bg-indigo-600' : 'bg-neutral-200'
+                  }`}
+                >
+                  <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                    newEvent.registrationRequired ? 'translate-x-6' : 'translate-x-0.5'
+                  }`} />
+                </button>
+              </div>
+
+              {newEvent.registrationRequired && (
+                <div>
+                  <label className="text-xs font-medium text-neutral-600 mb-1.5 block">Max Attendees</label>
+                  <input
+                    type="number"
+                    value={newEvent.maxAttendees}
+                    onChange={(e) => setNewEvent(prev => ({ ...prev, maxAttendees: e.target.value }))}
+                    placeholder="e.g., 50"
+                    className="w-full px-3 py-2.5 border border-neutral-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+              )}
+
+              {/* Create Button */}
+              <button
+                onClick={handleCreateEvent}
+                disabled={!newEvent.title || !newEvent.date || !newEvent.time}
+                className="w-full py-3 bg-indigo-600 text-white text-sm font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              >
+                <CalendarIcon size={16} />
+                Create Event
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filter Tabs */}
       <div className="flex gap-1 p-1 bg-neutral-100 rounded-xl">
@@ -501,7 +883,7 @@ export const EventsCalendar: React.FC<EventsCalendarProps> = ({ userRole, userNa
                       {showingTranscript ? 'Hide Summary' : 'View Transcript Summary'}
                     </button>
                   ) : (
-                    /* Upcoming Event - Register Button */
+                    /* Upcoming Event - Register/Calendar Buttons */
                     <div className="space-y-2">
                       {event.registrationRequired && event.maxAttendees && (
                         <div className="flex items-center justify-between text-xs">
@@ -517,10 +899,76 @@ export const EventsCalendar: React.FC<EventsCalendarProps> = ({ userRole, userNa
                           </span>
                         </div>
                       )}
-                      <button className="w-full py-3 bg-indigo-600 text-white text-sm font-medium rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
-                        <CalendarIcon size={16} />
-                        {event.registrationRequired ? 'Register Now' : 'Add to Calendar'}
-                      </button>
+                      
+                      {/* Add to Calendar Button */}
+                      {addedToCalendar.includes(event.id) ? (
+                        <div className="w-full py-3 bg-emerald-100 text-emerald-700 text-sm font-medium rounded-xl flex items-center justify-center gap-2">
+                          <CheckIcon size={16} />
+                          Added to Calendar
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <button 
+                            onClick={() => setShowCalendarOptions(showCalendarOptions === event.id ? null : event.id)}
+                            className="w-full py-3 bg-indigo-600 text-white text-sm font-medium rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                          >
+                            <CalendarIcon size={16} />
+                            {event.registrationRequired ? 'Register & Add to Calendar' : 'Add to Calendar'}
+                          </button>
+                          
+                          {/* Calendar Options Dropdown */}
+                          {showCalendarOptions === event.id && (
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-neutral-200 overflow-hidden z-10">
+                              <a
+                                href={generateGoogleCalendarUrl(event)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => {
+                                  setAddedToCalendar(prev => [...prev, event.id]);
+                                  setShowCalendarOptions(null);
+                                }}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors"
+                              >
+                                <span className="text-lg">📅</span>
+                                <div>
+                                  <p className="font-medium text-sm text-neutral-900">Google Calendar</p>
+                                  <p className="text-xs text-neutral-500">Open in new tab</p>
+                                </div>
+                              </a>
+                              <a
+                                href={generateOutlookCalendarUrl(event)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={() => {
+                                  setAddedToCalendar(prev => [...prev, event.id]);
+                                  setShowCalendarOptions(null);
+                                }}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors border-t border-neutral-100"
+                              >
+                                <span className="text-lg">📧</span>
+                                <div>
+                                  <p className="font-medium text-sm text-neutral-900">Outlook Calendar</p>
+                                  <p className="text-xs text-neutral-500">Open in new tab</p>
+                                </div>
+                              </a>
+                              <button
+                                onClick={() => {
+                                  downloadICS(event);
+                                  setAddedToCalendar(prev => [...prev, event.id]);
+                                  setShowCalendarOptions(null);
+                                }}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition-colors border-t border-neutral-100 w-full text-left"
+                              >
+                                <span className="text-lg">📥</span>
+                                <div>
+                                  <p className="font-medium text-sm text-neutral-900">Download .ics File</p>
+                                  <p className="text-xs text-neutral-500">For Apple Calendar, etc.</p>
+                                </div>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
 
