@@ -311,6 +311,320 @@ const aiToolsDatabase: AITool[] = [
     bestFor: 'Academic research, literature review, evidence synthesis',
     roles: ['innovation', 'engineering'],
     taskKeywords: ['academic', 'paper', 'study', 'research', 'literature', 'scientific', 'evidence', 'citation', 'journal']
+  },
+  // Data & Analytics Tools
+  {
+    id: 'julius-ai',
+    name: 'Julius AI',
+    description: 'AI data analyst that helps you analyze, visualize and interpret data instantly.',
+    category: 'Data Analysis',
+    url: 'https://julius.ai',
+    logo: '📈',
+    isApproved: true,
+    quickGuide: [
+      'Upload your CSV, Excel, or connect databases',
+      'Ask questions in plain English about your data',
+      'Generate charts and visualizations automatically',
+      'Export insights and reports'
+    ],
+    bestFor: 'Data analysis, visualization, business intelligence',
+    roles: ['finance', 'marketing', 'sales', 'engineering', 'innovation'],
+    taskKeywords: ['data', 'analysis', 'chart', 'graph', 'visualization', 'csv', 'excel', 'metrics', 'dashboard', 'statistics', 'numbers', 'trends']
+  },
+  {
+    id: 'tableau-ai',
+    name: 'Tableau AI',
+    description: 'AI-powered analytics with Tableau Pulse and Einstein-driven insights.',
+    category: 'Business Intelligence',
+    url: 'https://tableau.com',
+    logo: '📊',
+    isApproved: true,
+    quickGuide: [
+      'Connect your data sources',
+      'Use Ask Data for natural language queries',
+      'Enable Explain Data for automatic insights',
+      'Set up Tableau Pulse for metric monitoring'
+    ],
+    bestFor: 'Enterprise dashboards, executive reporting, data storytelling',
+    roles: ['finance', 'marketing', 'sales', 'logistics'],
+    taskKeywords: ['dashboard', 'reporting', 'business intelligence', 'bi', 'metrics', 'kpi', 'tableau', 'visualization', 'executive', 'insights']
+  },
+  // Video & Audio Tools
+  {
+    id: 'descript',
+    name: 'Descript',
+    description: 'AI-powered video and audio editing with transcription and overdub features.',
+    category: 'Video/Audio Editor',
+    url: 'https://descript.com',
+    logo: '🎬',
+    isApproved: true,
+    quickGuide: [
+      'Upload your video or audio file',
+      'Edit by editing the transcript text',
+      'Use Overdub to fix audio mistakes',
+      'Remove filler words automatically'
+    ],
+    bestFor: 'Podcast editing, video content, meeting recordings',
+    roles: ['marketing', 'sales', 'innovation'],
+    taskKeywords: ['video', 'audio', 'podcast', 'edit', 'recording', 'transcript', 'meeting recording', 'content creation', 'youtube']
+  },
+  {
+    id: 'runway',
+    name: 'Runway ML',
+    description: 'AI-powered creative suite for video generation and editing.',
+    category: 'Video Generation',
+    url: 'https://runway.ml',
+    logo: '🎥',
+    isApproved: false,
+    quickGuide: [
+      'Choose from text-to-video or image-to-video',
+      'Describe your desired video scene',
+      'Use Gen-2 for realistic outputs',
+      'Combine with editing tools for polish'
+    ],
+    bestFor: 'Marketing videos, social content, creative projects',
+    roles: ['marketing', 'design', 'innovation'],
+    taskKeywords: ['video', 'generate video', 'animation', 'motion', 'creative', 'social media video', 'ad video', 'clip']
+  },
+  {
+    id: 'elevenlabs',
+    name: 'ElevenLabs',
+    description: 'AI voice generation and cloning for realistic speech synthesis.',
+    category: 'Voice AI',
+    url: 'https://elevenlabs.io',
+    logo: '🎙️',
+    isApproved: true,
+    quickGuide: [
+      'Choose or clone a voice',
+      'Input your text script',
+      'Adjust voice settings (stability, clarity)',
+      'Download audio for your projects'
+    ],
+    bestFor: 'Voiceovers, audiobooks, product demos, accessibility',
+    roles: ['marketing', 'sales', 'design', 'innovation'],
+    taskKeywords: ['voice', 'audio', 'speech', 'voiceover', 'narration', 'text to speech', 'tts', 'podcast intro', 'demo']
+  },
+  // Customer & Support Tools
+  {
+    id: 'intercom-fin',
+    name: 'Intercom Fin',
+    description: 'AI customer service agent that resolves issues automatically.',
+    category: 'Customer Support AI',
+    url: 'https://intercom.com/fin',
+    logo: '💬',
+    isApproved: true,
+    quickGuide: [
+      'Train Fin on your help documentation',
+      'Set up conversation flows',
+      'Review AI responses and improve',
+      'Monitor resolution rates'
+    ],
+    bestFor: 'Customer support automation, help desk, FAQ handling',
+    roles: ['sales', 'marketing', 'logistics'],
+    taskKeywords: ['customer support', 'chatbot', 'help desk', 'faq', 'customer service', 'tickets', 'support automation']
+  },
+  {
+    id: 'zendesk-ai',
+    name: 'Zendesk AI',
+    description: 'AI-powered customer service with intelligent triage and agent assist.',
+    category: 'Support Platform',
+    url: 'https://zendesk.com',
+    logo: '🎯',
+    isApproved: true,
+    quickGuide: [
+      'Enable intelligent ticket routing',
+      'Use AI to suggest responses',
+      'Analyze customer sentiment',
+      'Automate common workflows'
+    ],
+    bestFor: 'Ticket management, agent productivity, customer insights',
+    roles: ['sales', 'logistics'],
+    taskKeywords: ['ticket', 'support', 'customer', 'helpdesk', 'service desk', 'zendesk', 'agent', 'triage']
+  },
+  // Coding & Development Tools
+  {
+    id: 'tabnine',
+    name: 'Tabnine',
+    description: 'AI code assistant that runs locally with privacy-first approach.',
+    category: 'Code Assistant',
+    url: 'https://tabnine.com',
+    logo: '⌨️',
+    isApproved: true,
+    quickGuide: [
+      'Install in your IDE',
+      'Tabnine learns from your codebase',
+      'Use whole-line completions',
+      'Keep code private with local mode'
+    ],
+    bestFor: 'Privacy-sensitive code completion, enterprise development',
+    roles: ['engineering'],
+    taskKeywords: ['code', 'autocomplete', 'programming', 'private', 'local ai', 'secure coding', 'enterprise']
+  },
+  {
+    id: 'codeium',
+    name: 'Codeium',
+    description: 'Free AI code completion with chat and search capabilities.',
+    category: 'Code Assistant',
+    url: 'https://codeium.com',
+    logo: '💻',
+    isApproved: true,
+    quickGuide: [
+      'Install the free extension',
+      'Get inline suggestions as you type',
+      'Use chat for code explanations',
+      'Search your codebase with AI'
+    ],
+    bestFor: 'Free alternative to Copilot, code search, learning',
+    roles: ['engineering', 'intern'],
+    taskKeywords: ['code', 'free', 'programming', 'autocomplete', 'learn coding', 'beginner', 'code search']
+  },
+  {
+    id: 'v0-dev',
+    name: 'v0 by Vercel',
+    description: 'AI UI generator that creates React components from text descriptions.',
+    category: 'UI Generation',
+    url: 'https://v0.dev',
+    logo: '🎨',
+    isApproved: true,
+    quickGuide: [
+      'Describe the UI you want to create',
+      'Review and iterate on generated code',
+      'Export React/Tailwind components',
+      'Integrate into your project'
+    ],
+    bestFor: 'Rapid UI prototyping, component generation, design-to-code',
+    roles: ['engineering', 'design'],
+    taskKeywords: ['ui', 'component', 'react', 'frontend', 'design', 'prototype', 'tailwind', 'webpage', 'landing page', 'form']
+  },
+  // Writing & Content Tools
+  {
+    id: 'grammarly',
+    name: 'Grammarly',
+    description: 'AI writing assistant for grammar, clarity, and tone improvements.',
+    category: 'Writing Assistant',
+    url: 'https://grammarly.com',
+    logo: '✏️',
+    isApproved: true,
+    quickGuide: [
+      'Install browser extension',
+      'Write and get real-time suggestions',
+      'Set tone and formality goals',
+      'Use plagiarism checker for important docs'
+    ],
+    bestFor: 'Email writing, documentation, professional communication',
+    roles: ['engineering', 'design', 'marketing', 'sales', 'finance', 'logistics', 'innovation', 'intern'],
+    taskKeywords: ['grammar', 'writing', 'email', 'proofread', 'spelling', 'tone', 'professional', 'communication', 'document']
+  },
+  {
+    id: 'otter-ai',
+    name: 'Otter.ai',
+    description: 'AI meeting assistant that transcribes and summarizes conversations.',
+    category: 'Meeting Assistant',
+    url: 'https://otter.ai',
+    logo: '📝',
+    isApproved: true,
+    quickGuide: [
+      'Connect to Zoom/Teams/Meet',
+      'Auto-join and transcribe meetings',
+      'Review AI-generated summaries',
+      'Search across all meeting transcripts'
+    ],
+    bestFor: 'Meeting notes, action items, searchable recordings',
+    roles: ['engineering', 'design', 'marketing', 'sales', 'finance', 'logistics', 'innovation', 'intern'],
+    taskKeywords: ['meeting', 'notes', 'transcript', 'summary', 'action items', 'zoom', 'teams', 'recording', 'minutes']
+  },
+  {
+    id: 'writer',
+    name: 'Writer',
+    description: 'Enterprise AI writing platform with brand consistency features.',
+    category: 'Enterprise Writing',
+    url: 'https://writer.com',
+    logo: '📄',
+    isApproved: true,
+    quickGuide: [
+      'Set up your brand style guide',
+      'Use AI to generate on-brand content',
+      'Check content against guidelines',
+      'Collaborate with team on drafts'
+    ],
+    bestFor: 'Brand consistency, enterprise content, style guides',
+    roles: ['marketing', 'sales'],
+    taskKeywords: ['brand', 'content', 'style guide', 'enterprise', 'marketing content', 'brand voice', 'consistency']
+  },
+  // HR & Recruiting Tools
+  {
+    id: 'textio',
+    name: 'Textio',
+    description: 'AI writing platform for inclusive and effective job postings.',
+    category: 'HR Writing',
+    url: 'https://textio.com',
+    logo: '👥',
+    isApproved: true,
+    quickGuide: [
+      'Paste your job description',
+      'Review inclusion and tone scores',
+      'Apply AI suggestions',
+      'Track performance metrics'
+    ],
+    bestFor: 'Job postings, employer branding, inclusive writing',
+    roles: ['logistics', 'marketing'],
+    taskKeywords: ['job posting', 'recruiting', 'hr', 'inclusive', 'hiring', 'job description', 'employer brand']
+  },
+  // Legal & Compliance Tools
+  {
+    id: 'harvey-ai',
+    name: 'Harvey AI',
+    description: 'AI legal assistant for contract review and legal research.',
+    category: 'Legal AI',
+    url: 'https://harvey.ai',
+    logo: '⚖️',
+    isApproved: false,
+    quickGuide: [
+      'Upload contracts for review',
+      'Ask legal research questions',
+      'Generate document summaries',
+      'Compare contract versions'
+    ],
+    bestFor: 'Contract analysis, legal research, compliance review',
+    roles: ['finance', 'logistics'],
+    taskKeywords: ['legal', 'contract', 'compliance', 'review', 'legal research', 'agreement', 'terms', 'policy']
+  },
+  // Project & Productivity Tools
+  {
+    id: 'linear-ai',
+    name: 'Linear AI',
+    description: 'AI-powered project management with automatic issue creation and planning.',
+    category: 'Project Management',
+    url: 'https://linear.app',
+    logo: '📋',
+    isApproved: true,
+    quickGuide: [
+      'Enable AI features in settings',
+      'Auto-generate issues from descriptions',
+      'Use AI to estimate and prioritize',
+      'Get cycle planning suggestions'
+    ],
+    bestFor: 'Sprint planning, issue tracking, team productivity',
+    roles: ['engineering', 'design', 'innovation'],
+    taskKeywords: ['project', 'issue', 'sprint', 'planning', 'backlog', 'ticket', 'roadmap', 'agile', 'jira alternative']
+  },
+  {
+    id: 'reclaim-ai',
+    name: 'Reclaim.ai',
+    description: 'AI calendar assistant that optimizes your schedule automatically.',
+    category: 'Calendar AI',
+    url: 'https://reclaim.ai',
+    logo: '📅',
+    isApproved: true,
+    quickGuide: [
+      'Connect your calendar',
+      'Set your work preferences',
+      'Let AI schedule focus time',
+      'Auto-reschedule when conflicts arise'
+    ],
+    bestFor: 'Time management, meeting scheduling, work-life balance',
+    roles: ['engineering', 'design', 'marketing', 'sales', 'finance', 'logistics', 'innovation', 'intern'],
+    taskKeywords: ['calendar', 'schedule', 'meeting', 'time', 'focus', 'productivity', 'work-life', 'booking']
   }
 ];
 

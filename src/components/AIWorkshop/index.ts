@@ -6,6 +6,7 @@ export { NewPostComposer } from './NewPostComposer';
 export { IllustrationPlaceholder } from './IllustrationPlaceholder';
 export { ExperimentsBoard } from './ExperimentsBoard';
 export { PlaybookCard, PlaybooksList } from './PlaybookCard';
+export { PlaybookLesson, playbookLessons } from './PlaybookLesson';
 export { TrustDashboard } from './TrustDashboard';
 export { PersonalJourney } from './PersonalJourney';
 export { ShareToSocial } from './ShareToSocial';

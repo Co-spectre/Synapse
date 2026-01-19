@@ -51,9 +51,10 @@ interface StoryCardProps {
   story: Story;
   onReaction: (type: 'hearts' | 'sparkles' | 'rockets') => void;
   onAddComment: (comment: string) => void;
+  darkMode?: boolean;
 }
 
-export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddComment }) => {
+export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddComment, darkMode = false }) => {
   const [showComments, setShowComments] = useState(false);
   const [userReactions, setUserReactions] = useState<Set<string>>(new Set());
   const [showShare, setShowShare] = useState(false);
@@ -67,22 +68,30 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddCo
   };
 
   return (
-    <article className="bg-white rounded-xl border border-neutral-200 overflow-hidden hover:shadow-md transition-shadow">
+    <article className={`rounded-xl border overflow-hidden hover:shadow-md transition-shadow ${
+      darkMode 
+        ? 'bg-neutral-800 border-neutral-700' 
+        : 'bg-white border-neutral-200'
+    }`}>
       {/* Author Header */}
       <div className="px-5 pt-5 pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-neutral-900 rounded-lg flex items-center justify-center text-white text-sm font-semibold">
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white text-sm font-semibold ${
+            darkMode ? 'bg-neutral-700' : 'bg-neutral-900'
+          }`}>
             {story.author.name.charAt(0)}
           </div>
           <div className="flex-1">
-            <h3 className="font-medium text-neutral-900">{story.author.name}</h3>
+            <h3 className={`font-medium ${darkMode ? 'text-white' : 'text-neutral-900'}`}>{story.author.name}</h3>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-neutral-500">{story.author.role}</span>
-              <span className="text-neutral-300">•</span>
-              <span className="text-sm text-neutral-500">{story.timestamp}</span>
+              <span className={`text-sm ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>{story.author.role}</span>
+              <span className={darkMode ? 'text-neutral-600' : 'text-neutral-300'}>•</span>
+              <span className={`text-sm ${darkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>{story.timestamp}</span>
             </div>
           </div>
-          <button className="p-2 hover:bg-neutral-100 rounded-lg transition-colors">
+          <button className={`p-2 rounded-lg transition-colors ${
+            darkMode ? 'hover:bg-neutral-700 text-neutral-400' : 'hover:bg-neutral-100 text-neutral-400'
+          }`}>
             <MoreIcon className="text-neutral-400" size={18} />
           </button>
         </div>
@@ -90,14 +99,16 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddCo
 
       {/* Title */}
       <div className="px-5 pb-3">
-        <h2 className="text-lg font-semibold text-neutral-900">
+        <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-neutral-900'}`}>
           {story.title}
         </h2>
       </div>
 
       {/* Post Image */}
       <div className="px-5 pb-4">
-        <div className="relative w-full h-48 bg-neutral-100 rounded-lg overflow-hidden">
+        <div className={`relative w-full h-48 rounded-lg overflow-hidden ${
+          darkMode ? 'bg-neutral-700' : 'bg-neutral-100'
+        }`}>
           <img 
             src={story.image || defaultImages[story.id % defaultImages.length]}
             alt={story.title}
@@ -109,27 +120,33 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddCo
 
       {/* Plain English Breakdown */}
       <div className="px-5 pb-4 space-y-2">
-        <p className="text-neutral-600 leading-relaxed">
+        <p className={`leading-relaxed ${darkMode ? 'text-neutral-300' : 'text-neutral-600'}`}>
           {story.content.paragraph1}
         </p>
         {story.content.paragraph2 && (
-          <p className="text-neutral-600 leading-relaxed">
+          <p className={`leading-relaxed ${darkMode ? 'text-neutral-300' : 'text-neutral-600'}`}>
             {story.content.paragraph2}
           </p>
         )}
       </div>
 
       {/* Limitation Nook */}
-      <div className="mx-5 mb-4 p-4 bg-amber-50 rounded-lg border border-amber-100">
+      <div className={`mx-5 mb-4 p-4 rounded-lg border ${
+        darkMode 
+          ? 'bg-amber-900/20 border-amber-800' 
+          : 'bg-amber-50 border-amber-100'
+      }`}>
         <div className="flex gap-3">
           <div className="flex-shrink-0">
-            <div className="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
-              <AlertIcon className="text-amber-600" size={16} />
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              darkMode ? 'bg-amber-900/30' : 'bg-amber-100'
+            }`}>
+              <AlertIcon className={darkMode ? 'text-amber-400' : 'text-amber-600'} size={16} />
             </div>
           </div>
           <div>
-            <h4 className="text-sm font-medium text-amber-800 mb-1">Good to know</h4>
-            <p className="text-sm text-amber-700/80 leading-relaxed">
+            <h4 className={`text-sm font-medium mb-1 ${darkMode ? 'text-amber-300' : 'text-amber-800'}`}>Good to know</h4>
+            <p className={`text-sm leading-relaxed ${darkMode ? 'text-amber-300/80' : 'text-amber-700/80'}`}>
               {story.limitation.text}
             </p>
           </div>
@@ -137,7 +154,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddCo
       </div>
 
       {/* Reaction Bar */}
-      <div className="px-5 py-4 border-t border-neutral-100">
+      <div className={`px-5 py-4 border-t ${darkMode ? 'border-neutral-700' : 'border-neutral-100'}`}>
         <div className="flex items-center justify-between">
           <div className="flex gap-1">
             <ReactionButton
@@ -146,7 +163,8 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddCo
               onClick={() => handleReaction('hearts')}
               isActive={userReactions.has('hearts')}
               activeColor="text-rose-500"
-              activeBg="bg-rose-50"
+              activeBg={darkMode ? 'bg-rose-900/30' : 'bg-rose-50'}
+              darkMode={darkMode}
             />
             <ReactionButton
               icon={<SparkleIcon size={16} />}
@@ -154,7 +172,8 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddCo
               onClick={() => handleReaction('sparkles')}
               isActive={userReactions.has('sparkles')}
               activeColor="text-amber-500"
-              activeBg="bg-amber-50"
+              activeBg={darkMode ? 'bg-amber-900/30' : 'bg-amber-50'}
+              darkMode={darkMode}
             />
             <ReactionButton
               icon={<RocketIcon size={16} />}
@@ -162,14 +181,19 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddCo
               onClick={() => handleReaction('rockets')}
               isActive={userReactions.has('rockets')}
               activeColor="text-blue-500"
-              activeBg="bg-blue-50"
+              activeBg={darkMode ? 'bg-blue-900/30' : 'bg-blue-50'}
+              darkMode={darkMode}
             />
           </div>
           
           <div className="flex items-center gap-1">
             <button
               onClick={() => setShowComments(!showComments)}
-              className="flex items-center gap-2 px-3 py-1.5 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg transition-colors"
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
+                darkMode 
+                  ? 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700' 
+                  : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100'
+              }`}
             >
               <CommentIcon size={16} />
               <span className="text-sm font-medium">{story.comments.length}</span>
@@ -178,8 +202,8 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddCo
               onClick={() => setIsBookmarked(!isBookmarked)}
               className={`p-2 rounded-lg transition-all ${
                 isBookmarked 
-                  ? 'text-amber-500 bg-amber-50' 
-                  : 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100'
+                  ? darkMode ? 'text-amber-400 bg-amber-900/30' : 'text-amber-500 bg-amber-50'
+                  : darkMode ? 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700' : 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100'
               }`}
               title="Bookmark"
             >
@@ -187,7 +211,11 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddCo
             </button>
             <button
               onClick={() => setShowShare(true)}
-              className="p-2 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
+              className={`p-2 rounded-lg transition-colors ${
+                darkMode 
+                  ? 'text-neutral-400 hover:text-neutral-200 hover:bg-neutral-700' 
+                  : 'text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100'
+              }`}
               title="Share"
             >
               <ShareIcon size={16} />
@@ -210,6 +238,7 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddCo
         <CommentSection
           comments={story.comments}
           onAddComment={onAddComment}
+          darkMode={darkMode}
         />
       )}
     </article>
@@ -223,16 +252,19 @@ interface ReactionButtonProps {
   isActive: boolean;
   activeColor: string;
   activeBg: string;
+  darkMode?: boolean;
 }
 
-const ReactionButton: React.FC<ReactionButtonProps> = ({ icon, count, onClick, isActive, activeColor, activeBg }) => {
+const ReactionButton: React.FC<ReactionButtonProps> = ({ icon, count, onClick, isActive, activeColor, activeBg, darkMode = false }) => {
   return (
     <button
       onClick={onClick}
       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
         isActive 
           ? `${activeBg} ${activeColor}` 
-          : 'text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600'
+          : darkMode 
+            ? 'text-neutral-400 hover:bg-neutral-700 hover:text-neutral-200'
+            : 'text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600'
       }`}
     >
       <span className={isActive ? 'scale-110' : ''}>{icon}</span>

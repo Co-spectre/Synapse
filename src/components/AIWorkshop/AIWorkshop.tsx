@@ -834,6 +834,7 @@ const handleNewPost = (post: { title: string; content: string; limitation: strin
                   story={story}
                   onReaction={(type) => handleReaction(story.id, type)}
                   onAddComment={(comment) => handleAddComment(story.id, comment)}
+                  darkMode={darkMode}
                 />
               ))}
             </div>
@@ -878,6 +879,7 @@ const handleNewPost = (post: { title: string; content: string; limitation: strin
             playbooks={samplePlaybooks}
             userProgressMap={playbookProgress}
             onStartPlaybook={handleStartPlaybook}
+            darkMode={darkMode}
           />
         )}
 
