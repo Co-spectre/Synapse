@@ -1,13 +1,25 @@
 import React, { useState } from 'react';
 import { CommentSection } from './CommentSection';
-import { IllustrationPlaceholder } from './IllustrationPlaceholder';
 import { ShareToSocial } from './ShareToSocial';
 import { HeartIcon, SparkleIcon, RocketIcon, CommentIcon, MoreIcon, AlertIcon, ShareIcon, BookmarkIcon } from './icons';
+
+// Default corporate images for stories without images
+const defaultImages = [
+  'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1553028826-f4804a6dba3b?w=800&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1497215842964-222b430dc094?w=800&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=400&fit=crop',
+];
 
 interface Story {
   id: number;
   title: string;
   illustration: string;
+  image?: string;
   author: {
     name: string;
     role: string;
@@ -83,9 +95,16 @@ export const StoryCard: React.FC<StoryCardProps> = ({ story, onReaction, onAddCo
         </h2>
       </div>
 
-      {/* Illustration Placeholder */}
+      {/* Post Image */}
       <div className="px-5 pb-4">
-        <IllustrationPlaceholder type={story.illustration} />
+        <div className="relative w-full h-48 bg-neutral-100 rounded-lg overflow-hidden">
+          <img 
+            src={story.image || defaultImages[story.id % defaultImages.length]}
+            alt={story.title}
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
+        </div>
       </div>
 
       {/* Plain English Breakdown */}

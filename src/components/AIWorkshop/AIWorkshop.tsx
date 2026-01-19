@@ -521,11 +521,24 @@ export const AIWorkshop: React.FC = () => {
   }
   // 'recent' is default order (already in that order)
 
-  const handleNewPost = (post: { title: string; content: string; limitation: string }) => {
+  // Random corporate stock images for posts
+const corporateImages = [
+  'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1553028826-f4804a6dba3b?w=800&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=400&fit=crop',
+  'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=400&fit=crop',
+];
+
+const handleNewPost = (post: { title: string; content: string; limitation: string; image?: string }) => {
+    // Get a random corporate image if none provided
+    const randomImage = corporateImages[Math.floor(Math.random() * corporateImages.length)];
+    
     const newStory = {
       id: stories.length + 1,
       title: post.title,
       illustration: "new-idea",
+      image: post.image || randomImage,
       author: {
         name: "You",
         role: "Team Member",
@@ -735,7 +748,7 @@ export const AIWorkshop: React.FC = () => {
       {/* Main Content - Swipeable */}
       <main 
         ref={contentRef}
-        className="max-w-3xl mx-auto px-3 sm:px-6 py-4 pb-36 sm:pb-28"
+        className="max-w-3xl mx-auto px-3 sm:px-6 py-4 pb-28"
         style={{
           transform: `translateX(${swipeOffset}px)`,
           transition: isSwipingCategory ? 'none' : 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
@@ -900,63 +913,9 @@ export const AIWorkshop: React.FC = () => {
         }}
       />
 
-      {/* Mobile Footer Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 sm:hidden bg-white border-t border-neutral-200 safe-bottom">
-        <div className="flex items-center justify-around px-2 py-2">
-          {navCategories.map((category, index) => {
-            const CategoryIcon = category.icon;
-            const isActive = activeCategoryIndex === index;
-            return (
-              <button
-                key={category.id}
-                onClick={() => {
-                  if (index === activeCategoryIndex || isTransitioning) return;
-                  
-                  const screenWidth = window.innerWidth;
-                  const direction = index > activeCategoryIndex ? 'left' : 'right';
-                  setSlideDirection(direction);
-                  setIsTransitioning(true);
-                  setSwipeOffset(direction === 'left' ? -screenWidth : screenWidth);
-                  
-                  setTimeout(() => {
-                    setActiveCategoryIndex(index);
-                    setActiveTab(category.tabs[0].id);
-                    setSwipeOffset(direction === 'left' ? screenWidth : -screenWidth);
-                    
-                    requestAnimationFrame(() => {
-                      setSwipeOffset(0);
-                      setTimeout(() => {
-                        setIsTransitioning(false);
-                        setSlideDirection(null);
-                      }, 300);
-                    });
-                  }, 150);
-                }}
-                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all active:scale-95 min-w-[72px] ${
-                  isActive
-                    ? 'text-neutral-900'
-                    : 'text-neutral-400'
-                }`}
-              >
-                <div className={`p-2 rounded-xl transition-all ${
-                  isActive ? 'bg-neutral-100' : ''
-                }`}>
-                  <CategoryIcon size={22} />
-                </div>
-                <span className={`text-xs font-medium ${
-                  isActive ? 'text-neutral-900' : 'text-neutral-500'
-                }`}>
-                  {category.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </nav>
-
-      {/* Fixed New Post Button at Bottom - Adjusted for mobile nav */}
+      {/* Fixed New Post Button at Bottom */}
       {activeTab === 'feed' && (
-        <div className="fixed bottom-16 sm:bottom-0 left-0 right-0 z-40 safe-bottom pb-4 pt-2 bg-gradient-to-t from-neutral-50 via-neutral-50 to-transparent">
+        <div className="fixed bottom-0 left-0 right-0 z-40 safe-bottom pb-4 pt-2 bg-gradient-to-t from-neutral-50 via-neutral-50 to-transparent">
           <div className="flex justify-center">
             <button 
               onClick={() => setShowComposer(!showComposer)}

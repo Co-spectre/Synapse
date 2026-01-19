@@ -1,8 +1,22 @@
 import React, { useState } from 'react';
-import { CloseIcon, LightbulbIcon, AlertIcon, ChevronRightIcon, ChevronLeftIcon, RocketIcon } from './icons';
+import { CloseIcon, LightbulbIcon, AlertIcon, ChevronRightIcon, ChevronLeftIcon, RocketIcon, ImageIcon } from './icons';
+
+// Random corporate stock images from Unsplash
+const corporateImages = [
+  'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=400&fit=crop', // Team collaboration
+  'https://images.unsplash.com/photo-1553028826-f4804a6dba3b?w=800&h=400&fit=crop', // Office meeting
+  'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&h=400&fit=crop', // Professional work
+  'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=400&fit=crop', // Business meeting
+  'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=400&fit=crop', // Team discussion
+  'https://images.unsplash.com/photo-1497215842964-222b430dc094?w=800&h=400&fit=crop', // Modern office
+  'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=400&fit=crop', // Strategy session
+  'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&h=400&fit=crop', // Coworking
+  'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=800&h=400&fit=crop', // Tech team
+  'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=400&fit=crop', // Presentation
+];
 
 interface NewPostComposerProps {
-  onSubmit: (post: { title: string; content: string; limitation: string }) => void;
+  onSubmit: (post: { title: string; content: string; limitation: string; image?: string }) => void;
   onCancel: () => void;
 }
 
@@ -11,12 +25,23 @@ export const NewPostComposer: React.FC<NewPostComposerProps> = ({ onSubmit, onCa
   const [content, setContent] = useState('');
   const [limitation, setLimitation] = useState('');
   const [step, setStep] = useState(1);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (title.trim() && content.trim()) {
-      onSubmit({ title: title.trim(), content: content.trim(), limitation: limitation.trim() });
+      onSubmit({ 
+        title: title.trim(), 
+        content: content.trim(), 
+        limitation: limitation.trim(),
+        image: selectedImage || undefined
+      });
     }
+  };
+
+  const handleRandomImage = () => {
+    const randomIndex = Math.floor(Math.random() * corporateImages.length);
+    setSelectedImage(corporateImages[randomIndex]);
   };
 
   const isStepValid = () => {
@@ -84,19 +109,57 @@ export const NewPostComposer: React.FC<NewPostComposerProps> = ({ onSubmit, onCa
 
           {/* Step 2: Content */}
           {step === 2 && (
-            <div>
-              <label className="block mb-2">
-                <span className="text-sm font-medium text-neutral-700">Explain in simple terms</span>
-              </label>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Describe what you built and why it matters..."
-                rows={4}
-                className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-neutral-900 placeholder-neutral-400 resize-none"
-                autoFocus
-              />
-              <p className="mt-2 text-sm text-neutral-500">
+            <div className="space-y-4">
+              <div>
+                <label className="block mb-2">
+                  <span className="text-sm font-medium text-neutral-700">Explain in simple terms</span>
+                </label>
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Describe what you built and why it matters..."
+                  rows={3}
+                  className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-neutral-900 placeholder-neutral-400 resize-none"
+                  autoFocus
+                />
+              </div>
+
+              {/* Image Upload Section */}
+              <div>
+                <label className="block mb-2">
+                  <span className="text-sm font-medium text-neutral-700">Add an image (optional)</span>
+                </label>
+                
+                {selectedImage ? (
+                  <div className="relative rounded-lg overflow-hidden border border-neutral-200">
+                    <img 
+                      src={selectedImage} 
+                      alt="Post preview" 
+                      className="w-full h-40 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setSelectedImage(null)}
+                      className="absolute top-2 right-2 p-1.5 bg-neutral-900/70 hover:bg-neutral-900 text-white rounded-lg transition-colors"
+                    >
+                      <CloseIcon size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleRandomImage}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-neutral-50 border border-neutral-200 border-dashed rounded-lg hover:bg-neutral-100 transition-colors text-neutral-600"
+                    >
+                      <ImageIcon size={18} />
+                      <span className="text-sm font-medium">Add Stock Image</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <p className="text-sm text-neutral-500">
                 Focus on the benefit to users, not technical details
               </p>
             </div>
