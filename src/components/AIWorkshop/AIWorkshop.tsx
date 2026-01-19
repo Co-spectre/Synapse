@@ -700,7 +700,7 @@ export const AIWorkshop: React.FC = () => {
       {/* Main Content - Swipeable */}
       <main 
         ref={contentRef}
-        className="max-w-3xl mx-auto px-3 sm:px-6 py-4 pb-28"
+        className="max-w-3xl mx-auto px-3 sm:px-6 py-4 pb-36 sm:pb-28"
         style={{
           transform: `translateX(${swipeOffset}px)`,
           transition: isSwipingCategory ? 'none' : 'transform 0.3s ease-out',
@@ -864,9 +864,44 @@ export const AIWorkshop: React.FC = () => {
         }}
       />
 
-      {/* Fixed New Post Button at Bottom */}
+      {/* Mobile Footer Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 sm:hidden bg-white border-t border-neutral-200 safe-bottom">
+        <div className="flex items-center justify-around px-2 py-2">
+          {navCategories.map((category, index) => {
+            const CategoryIcon = category.icon;
+            const isActive = activeCategoryIndex === index;
+            return (
+              <button
+                key={category.id}
+                onClick={() => {
+                  setActiveCategoryIndex(index);
+                  setActiveTab(category.tabs[0].id);
+                }}
+                className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all active:scale-95 min-w-[72px] ${
+                  isActive
+                    ? 'text-neutral-900'
+                    : 'text-neutral-400'
+                }`}
+              >
+                <div className={`p-2 rounded-xl transition-all ${
+                  isActive ? 'bg-neutral-100' : ''
+                }`}>
+                  <CategoryIcon size={22} />
+                </div>
+                <span className={`text-xs font-medium ${
+                  isActive ? 'text-neutral-900' : 'text-neutral-500'
+                }`}>
+                  {category.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Fixed New Post Button at Bottom - Adjusted for mobile nav */}
       {activeTab === 'feed' && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 safe-bottom pb-4 pt-2 bg-gradient-to-t from-neutral-50 via-neutral-50 to-transparent">
+        <div className="fixed bottom-16 sm:bottom-0 left-0 right-0 z-40 safe-bottom pb-4 pt-2 bg-gradient-to-t from-neutral-50 via-neutral-50 to-transparent">
           <div className="flex justify-center">
             <button 
               onClick={() => setShowComposer(!showComposer)}
