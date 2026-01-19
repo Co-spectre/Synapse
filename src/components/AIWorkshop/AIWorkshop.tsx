@@ -14,7 +14,7 @@ import { PeerNetwork } from './PeerNetwork';
 import { AIUsageTracker } from './AIUsageTracker';
 import { EventsCalendar } from './EventsCalendar';
 import { Newsletter } from './Newsletter';
-import { SynapseLogoIcon, PlusIcon, LeafIcon, FlaskIcon, BookIcon, ShieldIcon, UserIcon, SparkleIcon, TrendingUpIcon, CompassIcon, ChevronDownIcon, CalendarIcon, MailIcon } from './icons';
+import { SynapseLogoIcon, PlusIcon, LeafIcon, FlaskIcon, BookIcon, ShieldIcon, UserIcon, SparkleIcon, TrendingUpIcon, CompassIcon, CalendarIcon, MailIcon } from './icons';
 import { enhancedStories, enhancedExperiments } from './sampleData';
 
 // User profile type
@@ -264,26 +264,19 @@ export const AIWorkshop: React.FC = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({});
-  const [openDropdown, setOpenDropdown] = useState<NavCategory | null>(null);
   const [showSplash, setShowSplash] = useState(false);
   const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showRefreshLogo, setShowRefreshLogo] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isSwipingCategory, setIsSwipingCategory] = useState(false);
   const mainRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
+  const startX = useRef(0);
   const isPulling = useRef(false);
-
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setOpenDropdown(null);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  const isHorizontalSwipe = useRef(false);
 
   // Pull-to-refresh logic
   const handleTouchStart = useCallback((e: TouchEvent) => {
@@ -320,6 +313,65 @@ export const AIWorkshop: React.FC = () => {
     isPulling.current = false;
   }, [pullDistance]);
 
+  // Category swipe handlers for horizontal navigation
+  const handleCategorySwipeStart = useCallback((e: TouchEvent) => {
+    startX.current = e.touches[0].clientX;
+    startY.current = e.touches[0].clientY;
+    isHorizontalSwipe.current = false;
+  }, []);
+
+  const handleCategorySwipeMove = useCallback((e: TouchEvent) => {
+    const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    const diffX = currentX - startX.current;
+    const diffY = currentY - startY.current;
+
+    // Determine if horizontal swipe (only on first significant move)
+    if (!isHorizontalSwipe.current && Math.abs(diffX) > 10) {
+      isHorizontalSwipe.current = Math.abs(diffX) > Math.abs(diffY);
+    }
+
+    if (isHorizontalSwipe.current) {
+      setIsSwipingCategory(true);
+      // Limit the swipe offset
+      const maxOffset = 100;
+      const newOffset = Math.max(-maxOffset, Math.min(maxOffset, diffX * 0.5));
+      setSwipeOffset(newOffset);
+    }
+  }, []);
+
+  const handleCategorySwipeEnd = useCallback(() => {
+    if (!isSwipingCategory) return;
+    
+    const threshold = 50;
+    if (swipeOffset > threshold && activeCategoryIndex > 0) {
+      // Swipe right - go to previous category
+      const newIndex = activeCategoryIndex - 1;
+      setActiveCategoryIndex(newIndex);
+      // Set active tab to first tab of new category
+      const navCats = [
+        { tabs: ['feed', 'network', 'events', 'newsletter'] },
+        { tabs: ['experiments', 'playbooks', 'my-journey'] },
+        { tabs: ['ai-advisor', 'analytics', 'trust'] }
+      ];
+      setActiveTab(navCats[newIndex].tabs[0] as TabType);
+    } else if (swipeOffset < -threshold && activeCategoryIndex < 2) {
+      // Swipe left - go to next category
+      const newIndex = activeCategoryIndex + 1;
+      setActiveCategoryIndex(newIndex);
+      const navCats = [
+        { tabs: ['feed', 'network', 'events', 'newsletter'] },
+        { tabs: ['experiments', 'playbooks', 'my-journey'] },
+        { tabs: ['ai-advisor', 'analytics', 'trust'] }
+      ];
+      setActiveTab(navCats[newIndex].tabs[0] as TabType);
+    }
+    
+    setSwipeOffset(0);
+    setIsSwipingCategory(false);
+    isHorizontalSwipe.current = false;
+  }, [swipeOffset, activeCategoryIndex, isSwipingCategory]);
+
   useEffect(() => {
     const el = mainRef.current;
     if (!el) return;
@@ -332,6 +384,31 @@ export const AIWorkshop: React.FC = () => {
       el.removeEventListener('touchend', handleTouchEnd);
     };
   }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
+
+  // Category swipe effect
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    el.addEventListener('touchstart', handleCategorySwipeStart, { passive: true });
+    el.addEventListener('touchmove', handleCategorySwipeMove, { passive: true });
+    el.addEventListener('touchend', handleCategorySwipeEnd);
+    return () => {
+      el.removeEventListener('touchstart', handleCategorySwipeStart);
+      el.removeEventListener('touchmove', handleCategorySwipeMove);
+      el.removeEventListener('touchend', handleCategorySwipeEnd);
+    };
+  }, [handleCategorySwipeStart, handleCategorySwipeMove, handleCategorySwipeEnd]);
+
+  // Sync activeCategoryIndex when tab changes
+  useEffect(() => {
+    const socialTabs = ['feed', 'network', 'events', 'newsletter'];
+    const learnTabs = ['experiments', 'playbooks', 'my-journey'];
+    const aiTabs = ['ai-advisor', 'analytics', 'trust'];
+    
+    if (socialTabs.includes(activeTab)) setActiveCategoryIndex(0);
+    else if (learnTabs.includes(activeTab)) setActiveCategoryIndex(1);
+    else if (aiTabs.includes(activeTab)) setActiveCategoryIndex(2);
+  }, [activeTab]);
 
   // Handle onboarding completion
   const handleOnboardingComplete = (level: UserLevel, name: string, role: JobRole) => {
@@ -533,20 +610,10 @@ export const AIWorkshop: React.FC = () => {
     }
   ];
 
-  // Find which category the active tab belongs to
-  const getActiveCategory = (): NavCategory | null => {
-    for (const cat of navCategories) {
-      if (cat.tabs.some(tab => tab.id === activeTab)) {
-        return cat.id;
-      }
-    }
-    return null;
-  };
-
-  const activeCategory = getActiveCategory();
+  const currentCategoryTabs = navCategories[activeCategoryIndex]?.tabs || [];
 
   return (
-    <div ref={mainRef} className="min-h-screen min-h-[100dvh] bg-neutral-50 relative overscroll-none">
+    <div ref={mainRef} className="min-h-screen min-h-[100dvh] bg-neutral-50 relative overscroll-none touch-pan-y">
       {/* Pull-to-refresh indicator */}
       <div 
         className="fixed left-0 right-0 flex justify-center transition-all duration-200 ease-out z-[100] pointer-events-none"
@@ -561,72 +628,85 @@ export const AIWorkshop: React.FC = () => {
         </div>
       </div>
 
-      {/* Header */}
+      {/* Header - Mobile Optimized */}
       <header className="sticky top-0 z-50 bg-white border-b border-neutral-200 safe-top">
-        <div className="max-w-3xl mx-auto px-3 py-2.5">
-          {/* Tab Navigation - Grouped */}
-          <nav ref={dropdownRef} className="flex gap-1.5">
-            {navCategories.map((category) => {
-              const CategoryIcon = category.icon;
-              const isActiveCategory = activeCategory === category.id;
-              const isOpen = openDropdown === category.id;
-              
-              return (
-                <div key={category.id} className="relative flex-1">
+        <div className="max-w-3xl mx-auto px-3 py-2">
+          {/* Category Selector with Swipe Indicator */}
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex gap-2">
+              {navCategories.map((category, index) => {
+                const CategoryIcon = category.icon;
+                const isActive = activeCategoryIndex === index;
+                return (
                   <button
-                    onClick={() => setOpenDropdown(isOpen ? null : category.id)}
-                    className={`w-full flex items-center justify-center gap-1.5 px-2 py-3 rounded-xl text-sm font-medium transition-all active:scale-95 ${
-                      isActiveCategory
+                    key={category.id}
+                    onClick={() => {
+                      setActiveCategoryIndex(index);
+                      setActiveTab(category.tabs[0].id);
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-semibold transition-all active:scale-95 ${
+                      isActive
                         ? 'bg-neutral-900 text-white'
-                        : 'bg-neutral-100 text-neutral-600 active:bg-neutral-200'
+                        : 'bg-neutral-100 text-neutral-500'
                     }`}
                   >
-                    <CategoryIcon size={18} />
-                    <span className="text-xs sm:text-sm">{category.label}</span>
-                    <ChevronDownIcon 
-                      size={12} 
-                      className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} 
-                    />
+                    <CategoryIcon size={14} />
+                    <span className="hidden sm:inline">{category.label}</span>
                   </button>
-                  
-                  {/* Dropdown Menu */}
-                  {isOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-xl border border-neutral-200 shadow-xl overflow-hidden z-50">
-                      {category.tabs.map((tab) => {
-                        const TabIcon = tab.icon;
-                        const isActive = activeTab === tab.id;
-                        return (
-                          <button
-                            key={tab.id}
-                            onClick={() => {
-                              setActiveTab(tab.id);
-                              setOpenDropdown(null);
-                            }}
-                            className={`w-full flex items-center gap-3 px-4 py-3.5 text-sm font-medium transition-colors active:bg-neutral-100 ${
-                              isActive
-                                ? 'bg-neutral-100 text-neutral-900'
-                                : 'text-neutral-600'
-                            }`}
-                          >
-                            <TabIcon size={18} />
-                            <span>{tab.label}</span>
-                            {isActive && (
-                              <span className="ml-auto w-2 h-2 bg-neutral-900 rounded-full" />
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </nav>
+                );
+              })}
+            </div>
+            {/* Swipe hint dots */}
+            <div className="flex gap-1.5 items-center">
+              {navCategories.map((_, index) => (
+                <div 
+                  key={index}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    activeCategoryIndex === index 
+                      ? 'bg-neutral-900 w-4' 
+                      : 'bg-neutral-300'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Tab Pills - Horizontally Scrollable */}
+          <div className="overflow-x-auto scrollbar-hide -mx-3 px-3">
+            <div className="flex gap-2 min-w-max pb-1">
+              {currentCategoryTabs.map((tab) => {
+                const TabIcon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95 whitespace-nowrap ${
+                      isActive
+                        ? 'bg-neutral-100 text-neutral-900 shadow-sm'
+                        : 'text-neutral-500 active:bg-neutral-50'
+                    }`}
+                  >
+                    <TabIcon size={16} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-3xl mx-auto px-3 sm:px-6 py-4 pb-28">
+      {/* Main Content - Swipeable */}
+      <main 
+        ref={contentRef}
+        className="max-w-3xl mx-auto px-3 sm:px-6 py-4 pb-28"
+        style={{
+          transform: `translateX(${swipeOffset}px)`,
+          transition: isSwipingCategory ? 'none' : 'transform 0.3s ease-out',
+          opacity: isSwipingCategory ? 0.9 : 1
+        }}
+      >
         
         {/* Feed Tab */}
         {activeTab === 'feed' && (
